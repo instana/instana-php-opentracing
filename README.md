@@ -22,6 +22,13 @@ This library is available on Packagist. You can include it in your composer.yml 
     "require": {
         "instana/instana-php-opentracing": "^1.0"
     }
+    
+Because OpenTracing v1.0.0 is still in beta, you will also need to set
+
+    "prefer-stable": true,
+    "minimum-stability": "beta",
+
+Otherwise, Composer will refuse to install the package.
 
 ## Example usage
 
