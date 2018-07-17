@@ -144,7 +144,7 @@ abstract class InstanaSpan implements Span, JsonSerializable
     {
         $this->logWarningIfSpanIsAlreadyFinished();
 
-        if ($value == null || !is_scalar($value)) {
+        if ($value === null || !is_scalar($value)) {
             throw new \InvalidArgumentException("Tag values may be scalars only.");
         }
 
