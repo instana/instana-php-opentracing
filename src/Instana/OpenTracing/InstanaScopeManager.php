@@ -49,6 +49,9 @@ class InstanaScopeManager implements ScopeManager
         $size = count($this->scopeStack);
 
         for ($i = ($size-1); $i >= 0; $i--) {
+            if (!isset($this->scopeStack[$i])) {
+                continue;
+            }
             if ($this->scopeStack[$i]->isClosed()) {
                 unset($this->scopeStack[$i]);
                 continue;
