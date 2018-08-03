@@ -57,6 +57,19 @@ Otherwise, Composer will refuse to install the package.
     $parentScope->close();
 
     \OpenTracing\GlobalTracer::get()->flush();
+ 
+## Containerized applications
+
+When instrumenting a containerized app, you will need to provide the endpointURI to point to the
+agent running the container, e.g. for sending traces to the PHP Sensor you instantiate the tracer with
+
+    InstanaTracer::phpSensor('tcp://172.17.0.1:16816');
+
+For sending traces to the REST SDK, you instantiate the tracer with
+
+    InstanaTracer::restSdk('http://172.17.0.1:42699/com.instana.plugin.generic.trace');
+
+Adjust the URI to whatever URI allows communication from the container to the host.
                 
 ## License
 

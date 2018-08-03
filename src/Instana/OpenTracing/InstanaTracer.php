@@ -60,9 +60,10 @@ final class InstanaTracer implements Tracer
      *
      * This is equivant to just doing <code>new InstanaTracer()</code>
      *
+     * @param string $endpointUri Defaults to InstanaTcpSpanFlusher::PHP_SENSOR_ENDPOINT
      * @return InstanaTracer
      */
-    public static function phpSensor()
+    public static function phpSensor($endpointUri = InstanaTcpSpanFlusher::PHP_SENSOR_ENDPOINT)
     {
         return new InstanaTracer(
             new InstanaScopeManager(),
@@ -74,9 +75,10 @@ final class InstanaTracer implements Tracer
     /**
      * Returns a new InstanaTracer that will send traces to the REST SDK endpoint in the agent
      *
+     * @param string $endpointUri Defaults to InstanaHttpSpanFlusher::REST_SDK_ENDPOINT
      * @return InstanaTracer
      */
-    public static function restSdk()
+    public static function restSdk($endpointUri = InstanaHttpSpanFlusher::REST_SDK_ENDPOINT)
     {
         return new InstanaTracer(
             new InstanaScopeManager(),
