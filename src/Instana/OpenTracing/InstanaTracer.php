@@ -50,7 +50,7 @@ final class InstanaTracer implements Tracer
     /**
      * @return InstanaTracer
      */
-    public static function default()
+    public static function getDefault()
     {
         return InstanaTracer::phpSensor();
     }
@@ -67,7 +67,7 @@ final class InstanaTracer implements Tracer
     {
         return new InstanaTracer(
             new InstanaScopeManager(),
-            new InstanaTcpSpanFlusher(),
+            new InstanaTcpSpanFlusher($endpointUri),
             new InstanaSpanFactory(InstanaSdkSpan::class)
         );
     }
@@ -82,7 +82,7 @@ final class InstanaTracer implements Tracer
     {
         return new InstanaTracer(
             new InstanaScopeManager(),
-            new InstanaHttpSpanFlusher(),
+            new InstanaHttpSpanFlusher($endpointUri),
             new InstanaSpanFactory(InstanaRestSdkSpan::class)
         );
     }
@@ -245,11 +245,11 @@ final class InstanaTracer implements Tracer
                 $spanId = $traceId = null;
 
                 if (isset($carrier['X-INSTANA-L']) && !$carrier['X-INSTANA-L']) {
-                    return;
+                    return null;
                 }
 
                 if (isset($carrier['HTTP_X_INSTANA_L']) && !$carrier['HTTP_X_INSTANA_L']) {
-                    return;
+                    return null;
                 }
 
                 if (isset($carrier['X-INSTANA-S'])) {

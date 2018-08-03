@@ -32,7 +32,7 @@ Otherwise, Composer will refuse to install the package.
 
 ## Example usage
 
-    \OpenTracing\GlobalTracer::set(InstanaTracer::default());
+    \OpenTracing\GlobalTracer::set(InstanaTracer::getDefault());
 
     $parentScope = \OpenTracing\GlobalTracer::get()->startActiveSpan('one');
     $parentSpan = $parentScope->getSpan();
