@@ -9,6 +9,6 @@ final class UserAgent
      */
     public static function get()
     {
-       return 'Instana PHP OpenTracing/1.0.2';
+       return 'Instana PHP OpenTracing/1.0.3';
     }
 }
