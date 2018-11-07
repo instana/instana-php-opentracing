@@ -148,8 +148,12 @@ class InstanaTcpSpanFlusherTest extends TestCase
 
             $child = \OpenTracing\GlobalTracer::get()->startActiveSpan('my_second_span');
             $child->getSpan()->setTag('bar', 2);
-
             $child->close();
+
+            $child = \OpenTracing\GlobalTracer::get()->startActiveSpan('my_third_span');
+            $child->getSpan()->setTag('span.kind', 'client');
+            $child->close();
+
             $parent->close();
 
             \OpenTracing\GlobalTracer::get()->flush();
@@ -194,6 +198,24 @@ class InstanaTcpSpanFlusherTest extends TestCase
                         'tags' => [
                             'bar' => 2
                         ]
+                    ]
+                ]
+            ]
+        ], [
+            's' => $spanData[2]['s'],
+            't' => $spanData[0]['t'],
+            'p' => $spanData[0]['s'],
+            'ta' => 'php',
+            'n' => 'sdk',
+            'ts' => $spanData[2]['ts'],
+            'd' => $spanData[2]['d'],
+            'k' => 2,
+            'data' => [
+                'sdk' => [
+                    'name' => 'my_third_span',
+                    'type' => 'exit',
+                    'custom' => [
+                        'tags' => []
                     ]
                 ]
             ]

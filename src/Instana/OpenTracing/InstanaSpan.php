@@ -164,7 +164,7 @@ abstract class InstanaSpan implements Span, JsonSerializable
                         break;
                     case \OpenTracing\Tags\SPAN_KIND_RPC_CLIENT:
                     case \OpenTracing\Tags\SPAN_KIND_MESSAGE_BUS_PRODUCER:
-                        $this->spanType = InstanaSpanType::exit();
+			            $this->spanType = call_user_func(__NAMESPACE__ . '\InstanaSpanType::exit');
                         break;
                 }
                 break;

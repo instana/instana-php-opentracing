@@ -38,4 +38,15 @@ class InstanaSpanTypeTest extends TestCase
         $this->assertEquals(3, $exit->getKind());
         $this->assertEquals('local', $exit->getType());
     }
+
+    /**
+     * @test
+     */
+    public function verifyExitTypeReturnsSameInstanceAndHasCorrectTypeAndKind()
+    {
+        $exit = InstanaSpanType::exitType();
+        $this->assertSame($exit, InstanaSpanType::exitType());
+        $this->assertEquals(2, $exit->getKind());
+        $this->assertEquals('exit', $exit->getType());
+    }
 }

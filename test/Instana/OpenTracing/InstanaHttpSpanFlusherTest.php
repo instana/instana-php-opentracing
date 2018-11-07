@@ -167,8 +167,12 @@ class InstanaHttpSpanFlusherTest extends TestCase
 
         $child = \OpenTracing\GlobalTracer::get()->startActiveSpan('my_second_span');
         $child->getSpan()->setTag('bar', 2);
-
         $child->close();
+
+        $child = \OpenTracing\GlobalTracer::get()->startActiveSpan('my_third_span');
+        $child->getSpan()->setTag('span.kind', 'client');
+        $child->close();
+
         $parent->close();
 
         \OpenTracing\GlobalTracer::get()->flush();
@@ -193,6 +197,15 @@ class InstanaHttpSpanFlusherTest extends TestCase
             'duration' => $spanData[1]['duration'],
             'type' => 'LOCAL',
             'data' => ['bar' => 2]
+        ],[
+            'spanId' => $spanData[2]['spanId'],
+            'traceId' => $spanData[0]['traceId'],
+            'parentId' => $spanData[0]['spanId'],
+            'name' => 'my_third_span',
+            'timestamp' => $spanData[2]['timestamp'],
+            'duration' => $spanData[2]['duration'],
+            'type' => 'EXIT',
+            'data' => []
         ]], $spanData);
     }
 }

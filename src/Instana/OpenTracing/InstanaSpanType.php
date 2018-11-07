@@ -60,6 +60,19 @@ class InstanaSpanType
     }
 
     /**
+     * Workaround for PHP < 7 where exit() is parsed as T_EXIT
+     *
+     * @return InstanaSpanType
+     * @deprecated Upgrade to PHP7 to use InstanaSpanType::exit()
+     */
+    public static function exitType() {
+        if (self::$exit === null) {
+            self::$exit = new InstanaSpanType(2, 'exit');
+        }
+        return self::$exit;
+    }
+
+    /**
      * @return InstanaSpanType
      */
     public static function local() {
