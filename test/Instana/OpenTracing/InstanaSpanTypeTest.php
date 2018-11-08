@@ -11,8 +11,8 @@ class InstanaSpanTypeTest extends TestCase
      */
     public function verifyEntryReturnsSameInstanceAndHasCorrectTypeAndKind()
     {
-        $exit = InstanaSpanType::entry();
-        $this->assertSame($exit, InstanaSpanType::entry());
+        $exit = InstanaSpanType::entryType();
+        $this->assertSame($exit, InstanaSpanType::entryType());
         $this->assertEquals(1, $exit->getKind());
         $this->assertEquals('entry', $exit->getType());
     }
@@ -22,8 +22,8 @@ class InstanaSpanTypeTest extends TestCase
      */
     public function verifyExitReturnsSameInstanceAndHasCorrectTypeAndKind()
     {
-        $exit = InstanaSpanType::exit();
-        $this->assertSame($exit, InstanaSpanType::exit());
+        $exit = InstanaSpanType::exitType();
+        $this->assertSame($exit, InstanaSpanType::exitType());
         $this->assertEquals(2, $exit->getKind());
         $this->assertEquals('exit', $exit->getType());
     }
@@ -33,20 +33,9 @@ class InstanaSpanTypeTest extends TestCase
      */
     public function verifyLocalReturnsSameInstanceAndHasCorrectTypeAndKind()
     {
-        $exit = InstanaSpanType::local();
-        $this->assertSame($exit, InstanaSpanType::local());
+        $exit = InstanaSpanType::localType();
+        $this->assertSame($exit, InstanaSpanType::localType());
         $this->assertEquals(3, $exit->getKind());
         $this->assertEquals('local', $exit->getType());
-    }
-
-    /**
-     * @test
-     */
-    public function verifyExitTypeReturnsSameInstanceAndHasCorrectTypeAndKind()
-    {
-        $exit = InstanaSpanType::exitType();
-        $this->assertSame($exit, InstanaSpanType::exitType());
-        $this->assertEquals(2, $exit->getKind());
-        $this->assertEquals('exit', $exit->getType());
     }
 }

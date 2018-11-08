@@ -68,7 +68,7 @@ class InstanaSdkSpan extends InstanaSpan
             $json['p'] = $this->spanContext->getParentId();
         }
 
-        if ($this->spanType === InstanaSpanType::entry()) {
+        if ($this->spanType === InstanaSpanType::entryType()) {
             if ($this->processId != null) {
                 $json['ppid'] = $this->processId;
             }

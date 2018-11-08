@@ -61,8 +61,8 @@ abstract class InstanaSpan implements Span, JsonSerializable
             : $spanContext;
 
         $this->spanType = $this->spanContext->getParentId() === null
-            ? InstanaSpanType::entry()
-            : InstanaSpanType::local();
+            ? InstanaSpanType::entryType()
+            : InstanaSpanType::localType();
     }
 
     /**
@@ -160,11 +160,11 @@ abstract class InstanaSpan implements Span, JsonSerializable
                 switch ($value) {
                     case \OpenTracing\Tags\SPAN_KIND_RPC_SERVER:
                     case \OpenTracing\Tags\SPAN_KIND_MESSAGE_BUS_CONSUMER:
-                        $this->spanType = InstanaSpanType::entry();
+                        $this->spanType = InstanaSpanType::entryType();
                         break;
                     case \OpenTracing\Tags\SPAN_KIND_RPC_CLIENT:
                     case \OpenTracing\Tags\SPAN_KIND_MESSAGE_BUS_PRODUCER:
-			            $this->spanType = call_user_func(__NAMESPACE__ . '\InstanaSpanType::exit');
+			            $this->spanType = InstanaSpanType::exitType();
                         break;
                 }
                 break;

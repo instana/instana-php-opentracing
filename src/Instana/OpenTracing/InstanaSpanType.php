@@ -42,7 +42,7 @@ class InstanaSpanType
     /**
      * @return InstanaSpanType
      */
-    public static function entry() {
+    public static function entryType() {
         if (self::$entry === null) {
             self::$entry = new InstanaSpanType(1, 'entry');
         }
@@ -51,19 +51,6 @@ class InstanaSpanType
 
     /**
      * @return InstanaSpanType
-     */
-    public static function exit() {
-        if (self::$exit === null) {
-            self::$exit = new InstanaSpanType(2, 'exit');
-        }
-        return self::$exit;
-    }
-
-    /**
-     * Workaround for PHP < 7 where exit() is parsed as T_EXIT
-     *
-     * @return InstanaSpanType
-     * @deprecated Upgrade to PHP7 to use InstanaSpanType::exit()
      */
     public static function exitType() {
         if (self::$exit === null) {
@@ -75,7 +62,7 @@ class InstanaSpanType
     /**
      * @return InstanaSpanType
      */
-    public static function local() {
+    public static function localType() {
         if (self::$local === null) {
             self::$local = new InstanaSpanType(3, 'local');
         }

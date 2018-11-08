@@ -13,14 +13,22 @@ consider using the alternative REST SDK endpoint. To do so, set the global trace
         
 Using the restSdk tracer will send traces to the endpoint in the agent listening on port 42699.
 
-Minimum PHP Version is PHP 5.4.
+Starting with v2.0.0 the minimum PHP version required is PHP 5.4.  
+The 1.x branch will only work on PHP 7+.
+
+## BC breaks between the 1.x version and the 2.x version
+
+The methods `InstanaSpanType::entry()`, `InstanaSpanType::local()` and `InstanaSpanType::exit()` 
+have been renamed to `InstanaSpanType::entryType()`, `InstanaSpanType::localType()` and 
+`InstanaSpanType::exitType()` to provide compatibility with PHP < 7. Direct invocations of these 
+methods in your code will need to be renamed.
 
 ## Installation
 
 This library is available on Packagist. You can include it in your composer.yml like this:
 
     "require": {
-        "instana/instana-php-opentracing": "^1.0"
+        "instana/instana-php-opentracing": "^2.0"
     }
     
 Because OpenTracing v1.0.0 is still in beta, you will also need to set

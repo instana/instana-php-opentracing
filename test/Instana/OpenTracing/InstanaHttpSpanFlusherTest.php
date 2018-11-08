@@ -93,7 +93,7 @@ class InstanaHttpSpanFlusherTest extends TestCase
         $tracer->flush();
 
         $requestData = $this->getRequestData();
-        $this->assertEquals('Instana PHP OpenTracing/1.0.4', $requestData['User-Agent']);
+        $this->assertEquals('Instana PHP OpenTracing/2.0.0', $requestData['User-Agent']);
         $this->assertEquals('application/json', $requestData['Content-type']);
         $this->assertEquals('close', $requestData['Connection']);
 
