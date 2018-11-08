@@ -11,6 +11,6 @@ class UserAgentTest extends TestCase
      */
     public function getReturnsUserAgent()
     {
-        $this->assertEquals('Instana PHP OpenTracing/1.0.3', UserAgent::get());
+        $this->assertEquals('Instana PHP OpenTracing/1.0.4', UserAgent::get());
     }
 }
