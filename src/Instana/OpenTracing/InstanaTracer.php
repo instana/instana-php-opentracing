@@ -5,7 +5,6 @@ namespace Instana\OpenTracing;
 use OpenTracing\Exceptions\InvalidReferencesSet;
 use OpenTracing\Exceptions\InvalidSpanOption;
 use OpenTracing\Exceptions\UnsupportedFormat;
-use OpenTracing\Reference;
 use OpenTracing\Scope;
 use OpenTracing\ScopeManager;
 use OpenTracing\Span;

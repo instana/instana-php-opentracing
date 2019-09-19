@@ -2,7 +2,6 @@
 
 namespace Instana\OpenTracing;
 
-
 use OpenTracing\Scope;
 use OpenTracing\ScopeManager;
 use OpenTracing\Span;
@@ -25,7 +24,7 @@ class InstanaScopeManager implements ScopeManager
      * @return Scope instance to control the end of the active period for the {@link Span}. It is a
      * programming error to neglect to call {@link Scope#close()} on the returned instance.
      */
-    public function activate(Span $span, $finishSpanOnClose)
+    public function activate(Span $span, $finishSpanOnClose = self::DEFAULT_FINISH_SPAN_ON_CLOSE): Scope
     {
         $scope = new InstanaScope($span, $finishSpanOnClose);
         $this->scopeStack[] = $scope;
