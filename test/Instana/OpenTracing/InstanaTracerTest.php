@@ -28,7 +28,7 @@ class InstanaTracerTest extends TestCase
      */
     private $spanFactory;
 
-    public function setup()
+    public function setUp()
     {
         $this->spanFlusher = \Phake::mock(InstanaTcpSpanFlusher::class);
         $this->scopeManager = \Phake::mock(InstanaScopeManager::class);
@@ -86,6 +86,8 @@ class InstanaTracerTest extends TestCase
      */
     public function startActiveSpanNotifiesScopeManager()
     {
+        \Phake::when($this->scopeManager)->activate(\Phake::anyParameters())->thenReturn(\Phake::mock(InstanaScope::class));
+
         $this->tracer->startActiveSpan('dummy', []);
 
         \Phake::verify($this->scopeManager)->activate($this->isInstanceOf(InstanaSpan::class), true);
@@ -96,6 +98,8 @@ class InstanaTracerTest extends TestCase
      */
     public function startActiveSpanNotifiesScopeManagerNotFinishOnClose()
     {
+        \Phake::when($this->scopeManager)->activate(\Phake::anyParameters())->thenReturn(\Phake::mock(InstanaScope::class));
+
         $this->tracer->startActiveSpan('dummy', ['finish_span_on_close' => false]);
 
         \Phake::verify($this->scopeManager)->activate($this->isInstanceOf(InstanaSpan::class), false);

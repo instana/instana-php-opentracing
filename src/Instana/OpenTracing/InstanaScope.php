@@ -3,6 +3,7 @@
 namespace Instana\OpenTracing;
 
 use OpenTracing\Scope;
+use OpenTracing\Span;
 
 class InstanaScope implements Scope
 {
