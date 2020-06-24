@@ -28,14 +28,11 @@ methods in your code will need to be renamed.
 This library is available on Packagist. You can include it in your composer.yml like this:
 
     "require": {
-        "instana/instana-php-opentracing": "^2.0"
+        "instana/instana-php-opentracing": "^2.0",
+        "opentracing/opentracing": "^1.0.0@beta",
     }
     
-Because OpenTracing v1.0.0 is still in beta, you will also need to set
-
-    "prefer-stable": true,
-    "minimum-stability": "beta",
-
+Because OpenTracing v1.0.0 is still in beta, you need to specify the version of this dependency.
 Otherwise, Composer will refuse to install the package.
 
 ## Example usage
