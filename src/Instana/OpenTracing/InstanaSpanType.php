@@ -20,6 +20,11 @@ class InstanaSpanType
     private static $local;
 
     /**
+     * @var InstanaSpanType
+     */
+    private static $intermediate;
+
+    /**
      * @var int
      */
     private $kind;
@@ -67,6 +72,16 @@ class InstanaSpanType
             self::$local = new InstanaSpanType(3, 'local');
         }
         return self::$local;
+    }
+
+    /**
+     * @return InstanaSpanType
+     */
+    public static function intermediateType() {
+        if (self::$intermediate == null) {
+            self::$intermediate = new InstanaSpanType(3, 'intermediate');
+        }
+        return self::$intermediate;
     }
 
     /**
