@@ -4,9 +4,9 @@ A PHP implementation of the OpenTracing interfaces for usage with Instana.
 
 ## Requirements
 
-Requires an Instana Agent running at the configured  InstanaSpanFlusher  endpoint. By default, 
+Requires an Instana Agent running at the configured  InstanaSpanFlusher  endpoint. By default,
 traces will be sent to the PHP sensor's trace acceptor listening on port 16816 on any network
-interface on the host machine. If no PHP sensor is running on the machine receiving the traces, 
+interface on the host machine. If no PHP sensor is running on the machine receiving the traces,
 consider using the alternative REST SDK endpoint. To do so, set the global tracers as follows:
 
 ```php
@@ -14,17 +14,17 @@ use Instana\OpenTracing\InstanaTracer;
 
 \OpenTracing\GlobalTracer::set(InstanaTracer::restSdk());
 ```
-        
+
 Using the restSdk tracer will send traces to the endpoint in the agent listening on port 42699.
 
-Starting with v2.0.0 the minimum PHP version required is PHP 5.4.  
+Starting with v2.0.0 the minimum PHP version required is PHP 5.4.
 The 1.x branch will only work on PHP 7+.
 
 ## BC breaks between the 1.x version and the 2.x version
 
-The methods `InstanaSpanType::entry()`, `InstanaSpanType::local()` and `InstanaSpanType::exit()` 
-have been renamed to `InstanaSpanType::entryType()`, `InstanaSpanType::localType()` and 
-`InstanaSpanType::exitType()` to provide compatibility with PHP < 7. Direct invocations of these 
+The methods `InstanaSpanType::entry()`, `InstanaSpanType::local()` and `InstanaSpanType::exit()`
+have been renamed to `InstanaSpanType::entryType()`, `InstanaSpanType::localType()` and
+`InstanaSpanType::exitType()` to provide compatibility with PHP < 7. Direct invocations of these
 methods in your code will need to be renamed.
 
 ## Installation
@@ -44,7 +44,7 @@ You can include it manually in your composer.json like this:
     }
 }
 ```
-    
+
 Because OpenTracing v1.0.0 is still in beta, you will also need to set
 
 ```json
@@ -90,7 +90,7 @@ $parentScope->close();
 
 \OpenTracing\GlobalTracer::get()->flush();
 ```
- 
+
 ## Containerized applications
 
 When instrumenting a containerized app, you will need to provide the endpointURI to point to the
@@ -111,15 +111,86 @@ InstanaTracer::restSdk('http://172.17.0.1:42699/com.instana.plugin.generic.trace
 ```
 
 Adjust the URI to whatever URI allows communication from the container to the host.
-                
+
+## Support for 3rd party libraries
+
+### AWS SQS (Simple Queue Service) context injection and extraction
+
+When using `aws/aws-sdk-php` in your application, you will probably want to connect the dots.
+
+The shipped class `\Instana\OpenTracing\Support\SQS` enables you to inject the current context
+into the raw message passed to `\Aws\Sqs\SqsClient::sendMessage()` and extract it from messages
+received via `\Aws\Sqs\SqsClient::receiveMessage()`.
+
+To wrap the `sendMessage` command, call `SQS::sendMessage`:
+
+```php
+use Instana\OpenTracing\Support\SQS;
+
+SQS::sendMessage($sqsClient, $message);
+```
+
+To wrap the `sendMessageAsync` command, call `SQS::sendMessageAsync`:
+
+```php
+use Instana\OpenTracing\Support\SQS;
+
+SQS::sendMessageAsync($sqsClient, $message);
+```
+
+Receiving a message and continueing from there is equally easy:
+
+```php
+use Instana\OpenTracing\InstanaTags;
+use Instana\OpenTracing\Support\SQS;
+use OpenTracing\Tags;
+
+$result = $sqsClient->receiveMessage([
+    'AttributeNames' => ['SentTimestamp'],
+    'MaxNumberOfMessages' => 1,
+    'MessageAttributeNames' => ['All'],
+    'QueueUrl' => $queueUrl, // REQUIRED
+    'WaitTimeSeconds' => 0,
+]);
+
+if (!empty($result->get('Messages'))) {
+    $message = $result->get('Messages')[0];
+    $context = SQS::extractContext($tracer, $message);
+    $scope = $tracer->startActiveSpan('sqs', [
+        'child_of' => $context,
+    ]);
+
+    $span = $scope->getSpan();
+    $span->setTag(InstanaTags\SERVICE, 'php-consumer');
+    $span->setTag(Tags\SPAN_KIND, Tags\SPAN_KIND_MESSAGE_BUS_CONSUMER);
+    $span->setTag(Tags\MESSAGE_BUS_DESTINATION, $queueUrl);
+
+    // ..do your thing..
+
+    $scope->close();
+}
+```
+
+Or even easier:
+
+```php
+use Instana\OpenTracing\Support\SQS;
+
+$message = []; // receive your raw message from SQS
+$scope = SQS::enterWithMessage($message, function($message) use($myOtherService) {
+    // work the message as you like
+    $myOtherService->work($message);
+});
+```
+
 ## License
 
 This library is licensed under the [MIT License](https://opensource.org/licenses/MIT)
 
 > Copyright 2018 Instana, Inc
->  
+>
 >  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
->  
+>
 >  The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
->  
+>
 >  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

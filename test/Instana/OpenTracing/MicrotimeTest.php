@@ -2,7 +2,6 @@
 
 namespace Instana\OpenTracing;
 
-
 use PHPUnit\Framework\TestCase;
 
 class MicrotimeTest extends TestCase
@@ -96,5 +95,4 @@ class MicrotimeTest extends TestCase
         $this->assertTrue(strlen($microtime->getMilliseconds()) == strlen($microtime->getMicrotime()) - 3);
         $this->assertStringStartsWith($microtime->getMilliseconds(), $microtime->getMicrotime());
     }
-
 }

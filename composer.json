@@ -19,12 +19,18 @@
   "autoload": {
     "files": ["./src/Instana/OpenTracing/InstanaTags.php"],
     "psr-4": {
-      "": "src/"
+      "Instana\\OpenTracing\\": "src/Instana/OpenTracing"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Instana\\OpenTracing\\": "test/Instana/OpenTracing"
     }
   },
   "require": {
     "php": "^7.1",
     "ext-json": "*",
+    "aws/aws-sdk-php": "^3.155",
     "opentracing/opentracing": "^1@beta",
     "paragonie/random_compat": "<9.99"
   },
@@ -33,6 +39,10 @@
     "phake/phake": "^3.0"
   },
   "suggest": {
-    "ext-posix": "To be able to retrieve the process id more efficiently"
+    "ext-posix": "To be able to retrieve the process id more efficiently",
+    "aws/aws-sdk-php": "To be able to automatically wrap SQS transactions in a span"
+  },
+  "scripts": {
+    "test": "vendor/bin/phpunit"
   }
 }
