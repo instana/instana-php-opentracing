@@ -1,4 +1,4 @@
-# instana-php-opentracing
+# Instana OpenTracing for PHP
 
 A PHP implementation of the OpenTracing interfaces for usage with Instana.
 
@@ -9,7 +9,11 @@ traces will be sent to the PHP sensor's trace acceptor listening on port 16816 o
 interface on the host machine. If no PHP sensor is running on the machine receiving the traces, 
 consider using the alternative REST SDK endpoint. To do so, set the global tracers as follows:
 
-        \OpenTracing\GlobalTracer::set(InstanaTracer::restSdk());
+```php
+use Instana\OpenTracing\InstanaTracer;
+
+\OpenTracing\GlobalTracer::set(InstanaTracer::restSdk());
+```
         
 Using the restSdk tracer will send traces to the endpoint in the agent listening on port 42699.
 
@@ -25,57 +29,86 @@ methods in your code will need to be renamed.
 
 ## Installation
 
-This library is available on Packagist. You can include it in your composer.yml like this:
+This library is available on Packagist.
 
+```bash
+composer req "instana/instana-php-opentracing:^2.0"
+```
+
+You can include it manually in your composer.json like this:
+
+```json
+{
     "require": {
         "instana/instana-php-opentracing": "^2.0"
     }
+}
+```
     
 Because OpenTracing v1.0.0 is still in beta, you will also need to set
 
-    "prefer-stable": true,
-    "minimum-stability": "beta",
+```json
+{
+    "config": {
+        "prefer-stable": true,
+        "minimum-stability": "beta",
+    }
+}
+```
 
 Otherwise, Composer will refuse to install the package.
 
 ## Example usage
 
-    \OpenTracing\GlobalTracer::set(InstanaTracer::getDefault());
+```php
+use Instana\OpenTracing\InstanaTracer;
 
-    $parentScope = \OpenTracing\GlobalTracer::get()->startActiveSpan('one');
-    $parentSpan = $parentScope->getSpan();
-    $parentSpan->setTag(\Instana\OpenTracing\InstanaTags\SERVICE, "example");
-    $parentSpan->setTag(\OpenTracing\Tags\COMPONENT, 'PHP simple example app');
-    $parentSpan->setTag(\OpenTracing\Tags\SPAN_KIND, \OpenTracing\Tags\SPAN_KIND_RPC_SERVER);
-    $parentSpan->setTag(\OpenTracing\Tags\PEER_HOSTNAME, 'localhost');
-    $parentSpan->setTag(\OpenTracing\Tags\HTTP_URL, '/php/simple/one');
-    $parentSpan->setTag(\OpenTracing\Tags\HTTP_METHOD, 'GET');
-    $parentSpan->setTag(\OpenTracing\Tags\HTTP_STATUS_CODE, 200);
-    $parentSpan->log(['event' => 'bootstrap', 'type' => 'kernel.load', 'waiter.millis' => 1500]);
+\OpenTracing\GlobalTracer::set(InstanaTracer::getDefault());
 
-    $childScope = \OpenTracing\GlobalTracer::get()->startActiveSpan('two');
-    $childSpan = $childScope->getSpan();
-    $childSpan->setTag(\OpenTracing\Tags\SPAN_KIND, \OpenTracing\Tags\SPAN_KIND_RPC_CLIENT);
-    $childSpan->setTag(\OpenTracing\Tags\PEER_HOSTNAME, 'localhost');
-    $childSpan->setTag(\OpenTracing\Tags\HTTP_URL, '/php/simple/two');
-    $childSpan->setTag(\OpenTracing\Tags\HTTP_METHOD, 'POST');
-    $childSpan->setTag(\OpenTracing\Tags\HTTP_STATUS_CODE, 204);
+$parentScope = \OpenTracing\GlobalTracer::get()->startActiveSpan('one');
+$parentSpan = $parentScope->getSpan();
+$parentSpan->setTag(\Instana\OpenTracing\InstanaTags\SERVICE, "example-service");
+$parentSpan->setTag(\OpenTracing\Tags\COMPONENT, 'PHP simple example app');
+$parentSpan->setTag(\OpenTracing\Tags\SPAN_KIND, \OpenTracing\Tags\SPAN_KIND_RPC_SERVER);
+$parentSpan->setTag(\OpenTracing\Tags\PEER_HOSTNAME, 'localhost');
+$parentSpan->setTag(\OpenTracing\Tags\HTTP_URL, '/php/simple/one');
+$parentSpan->setTag(\Instana\OpenTracing\InstanaTags\HTTP_PATH_TPL, '/php/simple/{id}');
+$parentSpan->setTag(\OpenTracing\Tags\HTTP_METHOD, 'GET');
+$parentSpan->setTag(\OpenTracing\Tags\HTTP_STATUS_CODE, 200);
+$parentSpan->log(['event' => 'bootstrap', 'type' => 'kernel.load', 'waiter.millis' => 1500]);
 
-    $childScope->close();
-    $parentScope->close();
+$childScope = \OpenTracing\GlobalTracer::get()->startActiveSpan('two');
+$childSpan = $childScope->getSpan();
+$childSpan->setTag(\OpenTracing\Tags\SPAN_KIND, \OpenTracing\Tags\SPAN_KIND_RPC_CLIENT);
+$childSpan->setTag(\OpenTracing\Tags\PEER_HOSTNAME, 'localhost');
+$childSpan->setTag(\OpenTracing\Tags\HTTP_URL, '/php/simple/two');
+$childSpan->setTag(\OpenTracing\Tags\HTTP_METHOD, 'POST');
+$childSpan->setTag(\OpenTracing\Tags\HTTP_STATUS_CODE, 204);
 
-    \OpenTracing\GlobalTracer::get()->flush();
+$childScope->close();
+$parentScope->close();
+
+\OpenTracing\GlobalTracer::get()->flush();
+```
  
 ## Containerized applications
 
 When instrumenting a containerized app, you will need to provide the endpointURI to point to the
 agent running the container, e.g. for sending traces to the PHP Sensor you instantiate the tracer with
 
-    InstanaTracer::phpSensor('tcp://172.17.0.1:16816');
+```php
+use Instana\OpenTracing\InstanaTracer;
+
+InstanaTracer::phpSensor('tcp://172.17.0.1:16816');
+```
 
 For sending traces to the REST SDK, you instantiate the tracer with
 
-    InstanaTracer::restSdk('http://172.17.0.1:42699/com.instana.plugin.generic.trace');
+```php
+use Instana\OpenTracing\InstanaTracer;
+
+InstanaTracer::restSdk('http://172.17.0.1:42699/com.instana.plugin.generic.trace');
+```
 
 Adjust the URI to whatever URI allows communication from the container to the host.
                 
