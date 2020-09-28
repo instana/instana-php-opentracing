@@ -76,6 +76,39 @@ class SQS {
         return $result;
     }
 
+    /**
+     * Wrap the enter-transaction in a span.
+     *
+     * @param array $message
+     * @param callable $workUnit
+     * @return SpanContext
+     * @throws UnsupportedFormat
+     */
+    public static function enterWithMessage(array $message, callable $workUnit) {
+        $tracer = GlobalTracer::get();
+
+        $context = self::extractContext($tracer, $message);
+        $scope = $tracer->startActiveSpan('sqs', [
+            'child_of' => $context,
+        ]);
+
+        $span = $scope->getSpan();
+
+        $span->setTag(Tags\SPAN_KIND, Tags\SPAN_KIND_MESSAGE_BUS_CONSUMER);
+        $span->setTag(Tags\MESSAGE_BUS_DESTINATION, self::extractQueueUrl($message));
+
+        try {
+            $workUnit($message);
+        } catch (\Exception $e) {
+            $span->setTag('error.message', $e->getMessage());
+            throw $e;
+        } finally {
+            $scope->close();
+        }
+
+        return $scope;
+    }
+
     private static function createExit(Tracer $tracer, $queueUrl) {
 
         $scope = $tracer->startActiveSpan('sqs');

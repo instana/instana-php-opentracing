@@ -171,6 +171,18 @@ if (!empty($result->get('Messages'))) {
 }
 ```
 
+Or even easier:
+
+```php
+use Instana\OpenTracing\Support\SQS;
+
+$message = []; // receive your raw message from SQS
+$scope = SQS::enterWithMessage($message, function() use($myOtherService) {
+    // work the message as you like
+    $myOtherService->work($message);
+});
+```
+
 ## License
 
 This library is licensed under the [MIT License](https://opensource.org/licenses/MIT)
