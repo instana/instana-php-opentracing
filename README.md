@@ -138,6 +138,39 @@ use Instana\OpenTracing\Support\SQS;
 SQS::sendMessageAsync($sqsClient, $message);
 ```
 
+Receiving a message and continueing from there is equally easy:
+
+```php
+use Instana\OpenTracing\InstanaTags;
+use Instana\OpenTracing\Support\SQS;
+use OpenTracing\Tags;
+
+$result = $sqsClient->receiveMessage([
+    'AttributeNames' => ['SentTimestamp'],
+    'MaxNumberOfMessages' => 1,
+    'MessageAttributeNames' => ['All'],
+    'QueueUrl' => $queueUrl, // REQUIRED
+    'WaitTimeSeconds' => 0,
+]);
+
+if (!empty($result->get('Messages'))) {
+    $message = $result->get('Messages')[0];
+    $context = SQS::extractContext($tracer, $message);
+    $scope = $tracer->startActiveSpan('sqs', [
+        'child_of' => $context,
+    ]);
+
+    $span = $scope->getSpan();
+    $span->setTag(InstanaTags\SERVICE, 'php-consumer');
+    $span->setTag(Tags\SPAN_KIND, Tags\SPAN_KIND_MESSAGE_BUS_CONSUMER);
+    $span->setTag(Tags\MESSAGE_BUS_DESTINATION, $queueUrl);
+
+    // ..do your thing..
+
+    $scope->close();
+}
+```
+
 ## License
 
 This library is licensed under the [MIT License](https://opensource.org/licenses/MIT)
