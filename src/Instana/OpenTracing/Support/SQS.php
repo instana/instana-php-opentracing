@@ -47,9 +47,6 @@ class SQS {
         $span->setTag('messaging.exchangeType', 'SQS');
         $span->setTag('messaging.routingKey', $queueUrl);
 
-        $span->setTag('sqs.queue', $queueUrl);
-        $span->setTag('sqs.sort', 'exit');
-
         // inject ourselves into the message
         self::injectContext($tracer, $span->getContext(), $message);
 
