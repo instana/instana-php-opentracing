@@ -19,7 +19,12 @@
   "autoload": {
     "files": ["./src/Instana/OpenTracing/InstanaTags.php"],
     "psr-4": {
-      "": "src/"
+      "Instana\\OpenTracing\\": "src/Instana/OpenTracing"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Instana\\OpenTracing\\": "test/Instana/OpenTracing"
     }
   },
   "require": {
@@ -34,5 +39,8 @@
   },
   "suggest": {
     "ext-posix": "To be able to retrieve the process id more efficiently"
+  },
+  "scripts": {
+    "test": "vendor/bin/phpunit"
   }
 }

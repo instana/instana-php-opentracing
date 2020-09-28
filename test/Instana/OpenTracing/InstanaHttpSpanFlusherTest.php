@@ -2,8 +2,6 @@
 
 namespace Instana\OpenTracing;
 
-include_once 'HttpMockServer.php';
-
 use PHPUnit\Framework\TestCase;
 
 class InstanaHttpSpanFlusherTest extends TestCase
@@ -31,7 +29,7 @@ class InstanaHttpSpanFlusherTest extends TestCase
         self::$outfile = tempnam(sys_get_temp_dir(), basename(__FILE__));
         self::$router = tempnam(sys_get_temp_dir(), basename(__FILE__));
 
-        file_put_contents(self::$router, '<?php 
+        file_put_contents(self::$router, '<?php
             $input = file_get_contents("php://input");
             $headers = getallheaders();
             $headers["data"] = "$input";
