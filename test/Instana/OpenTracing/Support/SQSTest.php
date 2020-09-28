@@ -2,8 +2,18 @@
 
 namespace Instana\OpenTracing\Support;
 
+use Aws\Result;
+use Aws\Sqs\SqsClient;
+use Instana\OpenTracing\InstanaScopeManager;
 use Instana\OpenTracing\InstanaSpanContext;
+use Instana\OpenTracing\InstanaSpanFactory;
 use Instana\OpenTracing\InstanaTracer;
+use Instana\OpenTracing\NoopSpanFlusher;
+use Instana\OpenTracing\InstanaRestSdkSpan;
+use OpenTracing\GlobalTracer;
+use OpenTracing\Tags;
+use PHPUnit\Framework\Exception;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -12,7 +22,6 @@ use PHPUnit\Framework\TestCase;
 class SQSTest extends TestCase
 {
     /**
-     * @test
      * @dataProvider provideTracer
      */
     public function testInjectionAndExtraction(InstanaTracer $instanaTracer)
@@ -49,11 +58,87 @@ class SQSTest extends TestCase
         $this->assertEquals($spanContext->getSpanId(), $extractedContext->getSpanId());
     }
 
+    /**
+     * @return void
+     * @throws Exception
+     */
+    public function testSendMessage() {
+        $queueUrl = 'https://my.aws.sqs/queue/id';
+        $message = self::message($queueUrl);
+
+        $noopFlusher = new NoopSpanFlusher();
+        $instanaTracer = new InstanaTracer(
+            new InstanaScopeManager,
+            $noopFlusher,
+            new InstanaSpanFactory(InstanaRestSdkSpan::class)
+        );
+        GlobalTracer::set($instanaTracer);
+
+        /** @var SqsClient|MockObject */
+        $mockClient = $this->createMock(SqsClient::class);
+        $mockClient
+            ->expects($this->once())
+            ->method('__call')
+            ->with(
+                $this->equalTo('sendMessage'),
+                $this->anything()
+            )
+            ->willReturn($this->createMock(Result::class))
+        ;
+
+        SQS::sendMessage($mockClient, $message);
+
+        GlobalTracer::get()->flush();
+
+        $flushedSpans = $noopFlusher->getSpans();
+        $this->assertCount(1, $flushedSpans);
+
+        /** @var InstanaRestSdkSpan */
+        $span = $flushedSpans[0];
+        $this->assertInstanceOf(InstanaRestSdkSpan::class, $span);
+
+        $values = $span->jsonSerialize();
+
+        $this->assertEquals('sqs', $span->getOperationName());
+        $this->assertEquals('EXIT', $values['type']);
+        $this->assertArrayHasKey(Tags\MESSAGE_BUS_DESTINATION, $values['data']);
+        $this->assertEquals($queueUrl, $values['data'][Tags\MESSAGE_BUS_DESTINATION]);
+    }
+
     public function provideTracer()
     {
         return [
             [InstanaTracer::phpSensor()],
             [InstanaTracer::restSdk()]
+        ];
+    }
+
+    /**
+     * Creates a mock message.
+     *
+     * @param string $queueUrl
+     * @return (int|string[][]|string)[]
+     */
+    private static function message(string $queueUrl)
+    {
+        return [
+            'DelaySeconds' => 10,
+            'MessageAttributes' => [
+                "Title" => [
+                    'DataType' => "String",
+                    'StringValue' => "The Hitchhiker's Guide to the Galaxy"
+                ],
+                "Author" => [
+                    'DataType' => "String",
+                    'StringValue' => "Douglas Adams."
+                ],
+                "WeeksOn" => [
+                    'DataType' => "Number",
+                    'StringValue' => "6"
+                ]
+            ],
+            'MessageBody' => "Information about current NY Times fiction bestseller for week of 12/11/2016.",
+            'QueueUrl' => $queueUrl
         ];
     }
 }
