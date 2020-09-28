@@ -122,6 +122,22 @@ The shipped class `\Instana\OpenTracing\Support\SQS` enables you to inject the c
 into the raw message passed to `\Aws\Sqs\SqsClient::sendMessage()` and extract it from messages
 received via `\Aws\Sqs\SqsClient::receiveMessage()`.
 
+To wrap the `sendMessage` command, call `SQS::sendMessage`:
+
+```php
+use Instana\OpenTracing\Support\SQS;
+
+SQS::sendMessage($sqsClient, $message);
+```
+
+To wrap the `sendMessageAsync` command, call `SQS::sendMessageAsync`:
+
+```php
+use Instana\OpenTracing\Support\SQS;
+
+SQS::sendMessageAsync($sqsClient, $message);
+```
+
 ## License
 
 This library is licensed under the [MIT License](https://opensource.org/licenses/MIT)

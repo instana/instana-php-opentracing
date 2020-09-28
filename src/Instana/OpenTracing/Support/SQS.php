@@ -26,26 +26,9 @@ class SQS {
      * @return void
      */
     public static function sendMessage(SqsClient $sqsClient, array &$message) {
-        if (!array_key_exists('QueueUrl', $message) || !is_string($message['QueueUrl'])) {
-            // message malformed according to expectations
-            $queueUrl = 'queue_url_not_set';
-        } else {
-            $queueUrl = $message['QueueUrl'];
-        }
-
+        $queueUrl = self::extractQueueUrl($message);
         $tracer = GlobalTracer::get();
-        $scope = $tracer->startActiveSpan('sqs');
-        $span = $scope->getSpan();
-
-        $span->setTag(Tags\SPAN_KIND, Tags\SPAN_KIND_MESSAGE_BUS_PRODUCER);
-
-        $span->setTag('message_bus.destination', $queueUrl);
-
-        $span->setTag('messaging.type', 'sqs');
-        $span->setTag('messaging.address', $queueUrl);
-        $span->setTag('messaging.destination', $queueUrl);
-        $span->setTag('messaging.exchangeType', 'SQS');
-        $span->setTag('messaging.routingKey', $queueUrl);
+        [$span, $scope] = self::createExit($tracer, $queueUrl);
 
         // inject ourselves into the message
         self::injectContext($tracer, $span->getContext(), $message);
@@ -62,6 +45,66 @@ class SQS {
         }
 
         return $result;
+    }
+
+    /**
+     * Creates a span to wrap the transaction and annotates it for Instana.
+     *
+     * @param SqsClient $sqsClient
+     * @param array $message
+     * @return \GuzzleHttp\Promise\Promise
+     */
+    public static function sendMessageAsync(SqsClient $sqsClient, array &$message) {
+        $queueUrl = self::extractQueueUrl($message);
+        $tracer = GlobalTracer::get();
+        [$span, $scope] = self::createExit($tracer, $queueUrl);
+
+        // inject ourselves into the message
+        self::injectContext($tracer, $span->getContext(), $message);
+
+        // do the actual dispatching
+        try {
+            $result = $sqsClient->sendMessageAsync($message);
+        } catch (Exception $e) {
+            $span->setTag('error.message', $e->getMessage());
+
+            throw $e;
+        } finally {
+            $scope->close();
+        }
+
+        return $result;
+    }
+
+    private static function createExit(Tracer $tracer, $queueUrl) {
+
+        $scope = $tracer->startActiveSpan('sqs');
+        $span = $scope->getSpan();
+
+        $span->setTag(Tags\SPAN_KIND, Tags\SPAN_KIND_MESSAGE_BUS_PRODUCER);
+
+        $span->setTag('message_bus.destination', $queueUrl);
+
+        $span->setTag('messaging.type', 'sqs');
+        $span->setTag('messaging.address', $queueUrl);
+        $span->setTag('messaging.destination', $queueUrl);
+        $span->setTag('messaging.exchangeType', 'SQS');
+        $span->setTag('messaging.routingKey', $queueUrl);
+
+        return [$span, $scope];
+    }
+
+    /**
+     * @param array $message
+     * @return \string
+     */
+    private static function extractQueueUrl(array $message) {
+        if (!array_key_exists('QueueUrl', $message) || !is_string($message['QueueUrl'])) {
+            // message malformed according to expectations
+            return 'queue_url_not_set';
+        }
+
+        return $message['QueueUrl'];
     }
 
     /**

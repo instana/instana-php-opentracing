@@ -105,6 +105,53 @@ class SQSTest extends TestCase
         $this->assertEquals($queueUrl, $values['data'][Tags\MESSAGE_BUS_DESTINATION]);
     }
 
+    /**
+     * @return void
+     * @throws Exception
+     */
+    public function testSendMessageAsync() {
+        $queueUrl = 'https://my.aws.sqs/queue/id';
+        $message = self::message($queueUrl);
+
+        $noopFlusher = new NoopSpanFlusher();
+        $instanaTracer = new InstanaTracer(
+            new InstanaScopeManager,
+            $noopFlusher,
+            new InstanaSpanFactory(InstanaRestSdkSpan::class)
+        );
+        GlobalTracer::set($instanaTracer);
+
+        /** @var SqsClient|MockObject */
+        $mockClient = $this->createMock(SqsClient::class);
+        $mockClient
+            ->expects($this->once())
+            ->method('__call')
+            ->with(
+                $this->equalTo('sendMessageAsync'),
+                $this->anything()
+            )
+            ->willReturn($this->createMock(Result::class))
+        ;
+
+        SQS::sendMessageAsync($mockClient, $message);
+
+        GlobalTracer::get()->flush();
+
+        $flushedSpans = $noopFlusher->getSpans();
+        $this->assertCount(1, $flushedSpans);
+
+        /** @var InstanaRestSdkSpan */
+        $span = $flushedSpans[0];
+        $this->assertInstanceOf(InstanaRestSdkSpan::class, $span);
+
+        $values = $span->jsonSerialize();
+
+        $this->assertEquals('sqs', $span->getOperationName());
+        $this->assertEquals('EXIT', $values['type']);
+        $this->assertArrayHasKey(Tags\MESSAGE_BUS_DESTINATION, $values['data']);
+        $this->assertEquals($queueUrl, $values['data'][Tags\MESSAGE_BUS_DESTINATION]);
+    }
+
     public function provideTracer()
     {
         return [
