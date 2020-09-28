@@ -83,7 +83,7 @@ class SQS {
 
         $span->setTag(Tags\SPAN_KIND, Tags\SPAN_KIND_MESSAGE_BUS_PRODUCER);
 
-        $span->setTag('message_bus.destination', $queueUrl);
+        $span->setTag(Tags\MESSAGE_BUS_DESTINATION, $queueUrl);
 
         $span->setTag('messaging.type', 'sqs');
         $span->setTag('messaging.address', $queueUrl);
