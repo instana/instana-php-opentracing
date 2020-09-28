@@ -177,7 +177,7 @@ Or even easier:
 use Instana\OpenTracing\Support\SQS;
 
 $message = []; // receive your raw message from SQS
-$scope = SQS::enterWithMessage($message, function() use($myOtherService) {
+$scope = SQS::enterWithMessage($message, function($message) use($myOtherService) {
     // work the message as you like
     $myOtherService->work($message);
 });
